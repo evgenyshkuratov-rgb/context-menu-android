@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Moon icon (shown when in dark mode, tap to switch to light) -->
+    <path
+        android:pathData="M21.752,15.002C20.5633,15.4975 19.2879,15.7529 17.9994,15.7536C12.7524,15.7536 8.4994,11.5006 8.4994,6.2536C8.50008,4.96507 8.75547,3.68965 9.251,2.501C5.6291,3.8611 3.1006,7.3346 3.1006,11.3536C3.1006,16.6006 7.3536,20.8536 12.6006,20.8536C16.6196,20.8536 20.0931,18.3251 21.4532,14.7032C21.5532,14.4691 21.6527,14.2348 21.752,15.002Z"
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:fillColor="#00000000"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+</vector>

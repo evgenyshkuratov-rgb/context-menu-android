@@ -10,7 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatscreen.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnMessageClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private var isDarkMode = false
@@ -42,13 +42,10 @@ class MainActivity : AppCompatActivity() {
                 binding.header.paddingBottom
             )
 
-            // Apply bottom padding to input panel
-            binding.inputPanel.setPadding(
-                binding.inputPanel.paddingLeft,
-                binding.inputPanel.paddingTop,
-                binding.inputPanel.paddingRight,
-                systemBars.bottom
-            )
+            // Set bottom spacer height to match safe area inset
+            binding.bottomSpacer.layoutParams = binding.bottomSpacer.layoutParams.apply {
+                height = systemBars.bottom
+            }
 
             insets
         }
@@ -82,22 +79,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateThemeIcon() {
+        // Show sun icon in dark mode (tap to go light), moon in light mode (tap to go dark)
         val iconRes = if (isDarkMode) {
-            android.R.drawable.ic_menu_day
+            R.drawable.ic_theme_light
         } else {
-            android.R.drawable.ic_menu_month
+            R.drawable.ic_theme_dark
         }
         binding.btnThemeToggle.setImageResource(iconRes)
     }
 
     private fun setupMessages() {
         val messages = createSampleMessages()
-        val adapter = MessageAdapter(messages)
+        val adapter = MessageAdapter(messages, this)
 
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             this.adapter = adapter
         }
+    }
+
+    override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean) {
+        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing)
+        bottomSheet.show(supportFragmentManager, "ContextMenuBottomSheet")
     }
 
     private fun createSampleMessages(): List<Message> {

@@ -37,7 +37,6 @@
             android:layout_marginTop="@dimen/bubble_padding_vertical"
             android:layout_marginStart="@dimen/bubble_padding_horizontal"
             android:textSize="16sp"
-            android:textStyle="bold"
             android:fontFamily="sans-serif-medium"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"

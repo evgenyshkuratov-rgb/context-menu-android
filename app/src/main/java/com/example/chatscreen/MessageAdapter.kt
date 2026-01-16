@@ -13,10 +13,18 @@ import com.example.chatscreen.databinding.ItemMessageOutgoingBinding
 import com.example.chatscreen.databinding.ItemMessageVoiceBinding
 
 /**
+ * Callback interface for message click events.
+ */
+interface OnMessageClickListener {
+    fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean)
+}
+
+/**
  * RecyclerView adapter for displaying chat messages with different view types.
  */
 class MessageAdapter(
-    private val messages: List<Message>
+    private val messages: List<Message>,
+    private val onMessageClickListener: OnMessageClickListener? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -98,6 +106,11 @@ class MessageAdapter(
             binding.tvTime.text = message.time
             binding.ivEdit.visibility = if (message.isEdited) View.VISIBLE else View.GONE
             binding.ivCheckmark.visibility = if (message.isRead) View.VISIBLE else View.GONE
+
+            // Click listener for context menu
+            binding.bubbleContainer.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, message.text, true)
+            }
         }
     }
 
@@ -125,6 +138,11 @@ class MessageAdapter(
             binding.ivAvatar.setImageResource(avatarResId)
             binding.ivAvatar.clipToOutline = true
             binding.ivAvatar.outlineProvider = CircleOutlineProvider()
+
+            // Click listener for context menu
+            binding.bubbleContainer.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, message.text, false)
+            }
         }
     }
 
@@ -155,6 +173,11 @@ class MessageAdapter(
 
             // Create waveform bars
             setupWaveform(message.waveformHeights)
+
+            // Click listener for context menu
+            binding.bubbleContainer.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, null, false)
+            }
         }
 
         private fun setupWaveform(heights: List<Int>) {
@@ -215,6 +238,11 @@ class MessageAdapter(
                 val firstReaction = reactions.first()
                 binding.tvEmoji.text = firstReaction.emoji
                 binding.tvReactionCount.text = firstReaction.count.toString()
+            }
+
+            // Click listener for context menu
+            binding.bubbleContainer.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, null, false)
             }
         }
     }

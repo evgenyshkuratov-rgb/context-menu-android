@@ -35,4 +35,16 @@
     <string name="cd_add_reaction">Добавить реакцию</string>
     <string name="cd_avatar">Аватар</string>
     <string name="cd_photo">Фото</string>
+
+    <!-- Context Menu Actions -->
+    <string name="action_reply">Ответить</string>
+    <string name="action_forward">Переслать</string>
+    <string name="action_comment">Прокомментировать</string>
+    <string name="action_pin">Закрепить</string>
+    <string name="action_copy">Копировать</string>
+    <string name="action_add_label">Добавить метку</string>
+    <string name="action_save">В сохраненное</string>
+    <string name="action_viewed">Просмотрено</string>
+    <string name="action_select">Выбрать</string>
+    <string name="action_delete">Удалить</string>
 </resources>

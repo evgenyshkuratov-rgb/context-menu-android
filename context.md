@@ -1,289 +1,184 @@
 # Context Menu Android
 
 ## Tech Stack
-- **Language**: Kotlin
-- **UI Framework**: XML Layouts + ViewBinding
-- **Min SDK**: 26 (Android 8.0)
-- **Target SDK**: 34
-- **Architecture**: Single Activity with RecyclerView
-- **Design System**: TDM tokens (matching iOS app)
-- **Typography**: Roboto (Regular, Medium, Bold)
+- **Language**: Kotlin | **UI**: XML Layouts + ViewBinding
+- **Min SDK**: 26 (Android 8.0) | **Target SDK**: 34
+- **Architecture**: Single Activity with RecyclerView + BottomSheetDialogFragment
+- **Design System**: TDM tokens (matching iOS) | **Typography**: Roboto
 
 ## Project Structure
 ```
 ContextMenuAndroid/
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/example/chatscreen/
-│   │   │   ├── MainActivity.kt           # Single activity with chat UI
-│   │   │   ├── Message.kt                # Message data class (sealed class)
-│   │   │   ├── MessageAdapter.kt         # RecyclerView adapter with ViewHolders
-│   │   │   └── CircleOutlineProvider.kt  # ViewOutlineProvider for circular avatars
-│   │   ├── res/
-│   │   │   ├── layout/
-│   │   │   │   ├── activity_main.xml           # Main chat screen layout
-│   │   │   │   ├── item_message_outgoing.xml   # Outgoing text message
-│   │   │   │   ├── item_message_incoming.xml   # Incoming text message
-│   │   │   │   ├── item_message_voice.xml      # Voice message
-│   │   │   │   ├── item_message_image.xml      # Image message with reactions
-│   │   │   │   └── item_date_separator.xml     # Date separator pill
-│   │   │   ├── drawable/
-│   │   │   │   ├── bg_bubble_outgoing.xml      # Gradient bubble shape
-│   │   │   │   ├── bg_bubble_incoming.xml      # Solid bubble shape
-│   │   │   │   ├── bg_date_pill.xml            # Date separator background
-│   │   │   │   ├── bg_reaction.xml             # Reaction bubble gradient
-│   │   │   │   ├── bg_play_button.xml          # Play button circle
-│   │   │   │   ├── bg_time_badge.xml           # Time badge for images
-│   │   │   │   ├── bg_chevron_button.xml       # Chevron button background
-│   │   │   │   ├── bg_add_reaction.xml         # Add reaction button
-│   │   │   │   ├── ic_*.xml                    # Vector drawable icons
-│   │   │   │   └── *.png                       # Image assets
-│   │   │   ├── values/
-│   │   │   │   ├── colors.xml                  # Light mode colors
-│   │   │   │   ├── dimens.xml                  # Spacing & dimensions
-│   │   │   │   ├── strings.xml                 # Text strings (Russian)
-│   │   │   │   └── themes.xml                  # App theme
-│   │   │   ├── values-night/
-│   │   │   │   ├── colors.xml                  # Dark mode colors
-│   │   │   │   └── themes.xml                  # Dark theme overrides
-│   │   │   └── mipmap-*/                       # App launcher icons
-│   │   └── AndroidManifest.xml
-│   └── build.gradle.kts
-├── build.gradle.kts                            # Root build file
-├── settings.gradle.kts
-├── gradle.properties                           # Gradle/AndroidX config
-├── local.properties                            # SDK location (gitignored)
-├── gradlew                                     # Gradle wrapper script
-├── gradle/wrapper/
-│   ├── gradle-wrapper.jar
-│   └── gradle-wrapper.properties
-└── context.md                                  # This documentation file
+├── app/src/main/
+│   ├── java/com/example/chatscreen/
+│   │   ├── MainActivity.kt              # Chat UI, theme toggle, context menu trigger
+│   │   ├── Message.kt                   # Sealed class for message types
+│   │   ├── MessageAdapter.kt            # RecyclerView adapter with click handling
+│   │   ├── ContextMenuBottomSheet.kt    # Bottom sheet with reactions & actions
+│   │   └── CircleOutlineProvider.kt     # Circular avatar clipping
+│   ├── res/layout/
+│   │   ├── activity_main.xml            # Main chat screen
+│   │   ├── bottom_sheet_context_menu.xml # Context menu layout
+│   │   └── item_message_*.xml           # Message layouts (outgoing, incoming, voice, image, date)
+│   ├── res/drawable/                    # Icons, shapes, backgrounds
+│   ├── res/values/                      # Colors, dimens, strings, themes
+│   └── res/values-night/                # Dark mode overrides
+├── build.gradle.kts
+└── context.md
 ```
 
-## Drawable Assets
+## Context Menu (Bottom Sheet)
 
-### Vector Icons (converted from iOS SVG)
+Tap on any message to show the context menu bottom sheet.
 
-All icons are normalized to a **24x24 viewport** with content centered using `<group>` transforms. This ensures consistent sizing and prevents stretching when icons have non-square original dimensions.
+### Components
+- **Reaction bar**: Separate floating panel above bottom sheet
+  - Rounded container (25dp radius) with `background_sheet_or_modal` color
+  - 👍 👎 🔥 👌 🤔 + add button (44dp each, no visible backgrounds)
+  - 6dp internal padding, 8dp gap below panel
+- **Drag handle**: 36x4dp rounded indicator
+- **Actions list** (48dp height each):
 
-| Asset | Description | Size | Original SVG | Centering |
-|-------|-------------|------|--------------|-----------|
-| `ic_back` | Back navigation arrow | 24dp | 9x16 | translateX="7.5", translateY="4" |
-| `ic_search` | Search icon | 24dp | 18x18 | Native (square) |
-| `ic_call` | Phone call icon | 24dp | 18x18 | Native (square) |
-| `ic_attach` | Attachment icon | 24dp | 14x22 | translateX="5", translateY="1" |
-| `ic_chevron_up` | Chevron up arrow | 24dp | 14x8 | translateX="5", translateY="8" |
-| `ic_label` | Label/tag icon | 24dp | 20x20 | translateX="2", translateY="2" |
-| `ic_sticker` | Sticker icon | 24dp | 20x20 | translateX="2", translateY="2" |
-| `ic_mic` | Microphone icon | 24dp | 18x23 | translateX="3", translateY="0.5" |
-| `ic_play` | Play button icon | 24dp | 12x14 | translateX="6", translateY="5" |
-| `ic_checkmark_read` | Double checkmark (read) | 16dp | 16x8 | Native |
-| `ic_edit` | Edit indicator | 10dp | 10x10 | Native (square) |
-| `ic_plus` | Add reaction button | 22dp | 22x22 | Native (square) |
+| Action | Icon | Color |
+|--------|------|-------|
+| Ответить (Reply) | `ic_reply` | `text_primary_55` |
+| Переслать (Forward) | `ic_forward` | `text_primary_55` |
+| Прокомментировать (Comment) | `ic_comment` | `text_primary_55` |
+| Закрепить (Pin) | `ic_pin` | `text_primary_55` |
+| Копировать (Copy) | `ic_copy` | `text_primary_55` |
+| Добавить метку (Add label) | `ic_tag` | `text_primary_55` |
+| В сохраненное (Save) | `ic_saved` | `text_primary_55` |
+| Просмотрено (Viewed) | `ic_read_done` | `text_primary_55` |
+| Выбрать (Select) | `ic_check_outline` | `text_primary_55` |
+| Удалить (Delete) | `ic_delete` | `system_danger` |
 
-**Icon Normalization Pattern:**
-```xml
-<vector android:width="24dp" android:height="24dp"
-    android:viewportWidth="24" android:viewportHeight="24">
-    <group android:translateX="X" android:translateY="Y">
-        <path android:pathData="..." android:fillColor="#000000" />
-    </group>
-</vector>
-```
-
-### Image Assets (PNG)
+### Drawables
 | Asset | Description |
 |-------|-------------|
-| `avatar_1.png` | User avatar (Anna) |
-| `avatar_2.png` | User avatar (Maxim) |
-| `avatar_header.png` | Header avatar |
-| `photo_sample.png` | Sample photo for image message |
+| `bg_bottom_sheet` | Rounded top corners (20dp) for main sheet |
+| `bg_reaction_bar` | Rounded container (25dp) for reaction panel |
+| `bg_drag_handle` | Gray pill indicator |
+| `bg_reaction_item` | Pressed state for emoji buttons (transparent default) |
+| `bg_action_item` | Pressed state for action rows |
 
-### Drawable Shapes
-| Asset | Description |
-|-------|-------------|
-| `bg_bubble_outgoing` | Gradient background for outgoing messages |
-| `bg_bubble_incoming` | Solid background for incoming messages |
-| `bg_date_pill` | Date separator pill background |
-| `bg_reaction` | Reaction bubble with gradient |
-| `bg_play_button` | Circular play button background |
-| `bg_time_badge` | Semi-transparent time badge |
-| `bg_chevron_button` | Chevron button circle |
-| `bg_add_reaction` | Add reaction button circle |
-
-## Design System (TDMColors)
-
-Colors auto-adapt to Light/Dark mode via `values/` and `values-night/` resource qualifiers.
-
-### Light Mode Colors
-| Color | Value | Usage |
-|-------|-------|-------|
-| `background_base` | #FFFFFF | Main background |
-| `background_second` | #F5F5F5 | Secondary background |
-| `background_message_screen` | #EFE7DE | Chat background |
-| `background_someone_message` | #FFFFFF | Incoming message bubble |
-| `text_primary` | #000000 | Primary text |
-| `text_secondary` | #8A8A8E | Secondary text |
-| `my_message_start` | #FFFAF3 | Outgoing gradient start |
-| `my_message_end` | #FFFAF3 | Outgoing gradient end |
-| `primary_default` | #FF8C00 | Primary accent color |
-| `system_danger` | #E06141 | Delete/error color |
-
-### Dark Mode Colors
-| Color | Value | Usage |
-|-------|-------|-------|
-| `background_base` | #1A1A1A | Main background |
-| `background_second` | #313131 | Secondary background |
-| `background_message_screen` | #0F0F10 | Chat background |
-| `background_someone_message` | #373737 | Incoming message bubble |
-| `text_primary` | #FFFFFF | Primary text |
-| `text_secondary` | #8A8A8E | Secondary text |
-| `my_message_start` | #2B5D95 | Outgoing gradient start |
-| `my_message_end` | #284A70 | Outgoing gradient end |
-
-### Avatar Colors (11 colors, index 0-10)
-Used for sender name coloring based on user index:
-- `avatar_0` through `avatar_10` with distinct colors for each
-
-## Typography
-
-### Font Styles (matching iOS Figma design)
-| Style | Font | Size | Line Height |
-|-------|------|------|-------------|
-| Message text | Roboto Regular | 15sp | 20sp |
-| Sender name | Roboto Medium | 16sp | 22sp |
-| Time/Caption | Roboto Regular | 12sp | 14sp |
-| Header title | Roboto Bold | 16sp | - |
-| Header subtitle | Roboto Regular | 14sp | - |
-| Date separator | Roboto Regular | 13sp | - |
-
-## Key Dimensions (dp)
-
-| Element | Size |
-|---------|------|
-| Header height | 56dp |
-| Avatar (header) | 40dp |
-| Avatar (messages) | 32dp |
-| Bubble corner radius | 14dp |
-| Bubble max width (outgoing) | 311dp |
-| Bubble max width (incoming) | 287dp |
-| Bubble padding horizontal | 12dp |
-| Bubble padding vertical | 8dp |
-| Message spacing | 12dp |
-| Play button size | 40dp |
-| Input panel height | 80dp |
-| Toolbar buttons | 36-40dp |
-| Icon size (standard) | 24dp |
-| Icon alpha | 55% (0.55) |
-
-## Message Types
-
-Implemented as a Kotlin sealed class:
-
+### Usage
 ```kotlin
-sealed class Message {
-    data class OutgoingText(
-        val text: String,
-        val time: String,
-        val isEdited: Boolean = false,
-        val isRead: Boolean = true
-    ) : Message()
+// In MessageAdapter - click listener on bubbleContainer
+binding.bubbleContainer.setOnClickListener {
+    onMessageClickListener?.onMessageClick(message, message.text, isOutgoing)
+}
 
-    data class IncomingText(
-        val senderName: String,
-        val senderAvatarIndex: Int,
-        val text: String,
-        val time: String
-    ) : Message()
-
-    data class Voice(
-        val senderName: String,
-        val senderAvatarIndex: Int,
-        val duration: String,
-        val time: String,
-        val waveformHeights: List<Int>
-    ) : Message()
-
-    data class Image(
-        val senderName: String,
-        val senderAvatarIndex: Int,
-        val imageResId: Int,
-        val time: String,
-        val reactions: List<Reaction>? = null
-    ) : Message()
-
-    data class DateSeparator(val date: String) : Message()
+// In MainActivity
+override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean) {
+    ContextMenuBottomSheet.newInstance(messageText, isOutgoing)
+        .show(supportFragmentManager, "ContextMenuBottomSheet")
 }
 ```
 
-## Current State
+## Vector Icons
 
-### Implemented Features
-- [x] Chat screen UI with header, message list, input panel
-- [x] Multiple message types (outgoing, incoming, voice, image, date separator)
-- [x] RecyclerView with multiple ViewHolder types
-- [x] ViewBinding for type-safe view access
-- [x] Light/dark theme toggle in header
-- [x] TDM design system colors (light + dark)
-- [x] Roboto typography matching iOS specs
-- [x] Vector drawable icons converted from iOS (normalized to 24x24 viewport)
-- [x] Gradient backgrounds for outgoing messages (dark mode)
-- [x] Circular avatars with ViewOutlineProvider
-- [x] Waveform visualization for voice messages
-- [x] Reactions display on image messages
-- [x] Adaptive launcher icons
-- [x] Icon centering fix - all icons properly centered in 24x24 viewport
+All icons normalized to **24x24 viewport**. Non-square icons use `<group>` transforms for centering.
 
-### Sample Messages
-The app displays sample messages matching the iOS version:
-1. Date separator: "24 ноября"
-2. Incoming (Anna): Long project discussion text
-3. Outgoing: "Привет, как дела?"
-4. Incoming (Anna): Voice message (0:18)
-5. Outgoing (edited): Reply about sending materials
-6. Incoming (Maxim): Image with 🔥 reaction
+### Chat UI Icons
+| Icon | Description | Notes |
+|------|-------------|-------|
+| `ic_back`, `ic_search`, `ic_call` | Header navigation | Centered with translateX/Y |
+| `ic_attach`, `ic_label`, `ic_sticker`, `ic_mic` | Input toolbar | `fillType="evenOdd"` for outlines |
+| `ic_play`, `ic_plus` | UI controls | |
+| `ic_checkmark_read` (16dp), `ic_edit` (10dp) | Message indicators | Native size |
+| `ic_theme_light`, `ic_theme_dark` | Theme toggle | Sun/moon icons |
 
-## Key Files
+### Context Menu Icons
+| Icon | Description |
+|------|-------------|
+| `ic_reply` | Reply arrow |
+| `ic_forward` | Forward arrow |
+| `ic_comment` | Comment bubbles |
+| `ic_pin` | Pin/tack |
+| `ic_copy` | Copy squares |
+| `ic_tag` | Label tag (stroke) |
+| `ic_saved` | Bookmark (stroke) |
+| `ic_read_done` | Double checkmark |
+| `ic_check_outline` | Circle checkmark |
+| `ic_delete` | Trash bin (red #E06141) |
 
-| File | Purpose |
-|------|---------|
-| `MainActivity.kt` | Chat screen UI, theme toggle, RecyclerView setup |
-| `Message.kt` | Sealed class for message types |
-| `MessageAdapter.kt` | RecyclerView adapter with 5 ViewHolder types |
-| `CircleOutlineProvider.kt` | ViewOutlineProvider for circular avatar clipping |
-| `activity_main.xml` | Main layout with header, RecyclerView, input panel |
-| `colors.xml` | Light mode TDM colors |
-| `values-night/colors.xml` | Dark mode TDM colors |
-| `dimens.xml` | All dimensions and spacing values |
-| `themes.xml` | Material3 theme configuration |
+### Image Assets
+`avatar_1.png`, `avatar_2.png`, `avatar_header.png`, `photo_sample.png`
+
+## Design System
+
+Colors auto-adapt via `values/` and `values-night/` qualifiers.
+
+### Key Colors
+| Color | Light | Dark | Usage |
+|-------|-------|------|-------|
+| `background_base` | #FFFFFF | #1A1A1A | Main background |
+| `background_sheet_or_modal` | #FFFFFF | #232325 | Bottom sheet |
+| `background_message_screen` | #EFE7DE | #0F0F10 | Chat background |
+| `text_primary` | #000000 | #FFFFFF | Primary text |
+| `text_primary_55` | 55% black | 55% white | Icons |
+| `text_primary_08` | 8% black | 8% white | Pressed states |
+| `my_message_start/end` | #FFFAF3 | #2B5D95/#284A70 | Outgoing gradient |
+| `system_danger` | #E06141 | #E06141 | Delete actions |
+
+### Typography
+| Style | Size | Font |
+|-------|------|------|
+| Message text | 15sp + 2sp line spacing | `sans-serif` |
+| Sender name | 16sp | `sans-serif-medium` |
+| Time/Caption | 12sp | `sans-serif` |
+| Context menu action | 15sp | `sans-serif` |
+
+## Key Dimensions
+| Element | Size |
+|---------|------|
+| Header height | 56dp |
+| Avatar (header/messages) | 40dp / 32dp |
+| Bubble max width | 311dp (out) / 287dp (in) |
+| Bubble padding | 12dp H / 8dp V |
+| Icon size / alpha | 24dp / 55% |
+| Context menu action height | 48dp |
+| Reaction button | 44dp |
+
+## Message Types
+```kotlin
+sealed class Message {
+    data class OutgoingText(text: String, time: String, isEdited: Boolean, isRead: Boolean)
+    data class IncomingText(senderName: String, senderAvatarIndex: Int, text: String, time: String)
+    data class Voice(senderName: String, senderAvatarIndex: Int, duration: String, time: String, waveformHeights: List<Int>)
+    data class Image(senderName: String, senderAvatarIndex: Int, imageResId: Int, time: String, reactions: List<Reaction>?)
+    data class DateSeparator(date: String)
+}
+```
+
+## Implemented Features
+- [x] Chat screen UI (header, messages, input panel)
+- [x] Message types: outgoing, incoming, voice, image, date separator
+- [x] RecyclerView with ViewBinding
+- [x] Light/dark theme toggle
+- [x] TDM design system colors
+- [x] Vector icons from iOS (24x24 normalized)
+- [x] Edge-to-edge display with safe area handling
+- [x] Circular avatars, waveform visualization, reactions
+- [x] **Context menu bottom sheet** (tap on any message)
+- [x] Reaction bar as separate floating panel (matching Figma design)
+- [x] 10 action items with icons and press states
+- [x] Copy action copies text to clipboard
+- [x] Simplified input toolbar (removed chevron button)
 
 ## Build & Run
-
 ```bash
-# From project root
 ./gradlew assembleDebug
-
-# Install on connected device/emulator
 adb install app/build/outputs/apk/debug/app-debug.apk
-
-# Or open in Android Studio
-open -a "Android Studio" .
+adb shell am start -n com.example.chatscreen/.MainActivity
 ```
 
 ## Future Enhancements
-- [ ] Add long press gesture for context menu
-- [ ] Implement context menu overlay
-- [ ] Add message interactions (copy, reply, edit, delete)
-- [ ] Add keyboard handling for text input
+- [ ] Long press gesture (currently uses tap)
+- [ ] Action handlers (reply, forward, pin, etc.)
+- [ ] Keyboard handling for text input
 - [ ] Connect to data layer
 
-## Related Projects
-- **iOS Version**: [Context-Menu-Optimization](https://github.com/evgenyshkuratov-rgb/Context-Menu-Optimization)
-  - Full context menu implementation with animations
-  - Perfect and Simple variants
-  - Selection screen
-
-## GitHub Repository
-- **Repository**: `evgenyshkuratov-rgb/context-menu-android`
-- **URL**: https://github.com/evgenyshkuratov-rgb/context-menu-android
-- **Visibility**: Public
+## Related
+- **iOS Version**: Full context menu with animations, Perfect/Simple variants
+- **Repository**: https://github.com/evgenyshkuratov-rgb/context-menu-android
