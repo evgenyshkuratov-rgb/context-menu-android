@@ -63,20 +63,33 @@ ContextMenuAndroid/
 ## Drawable Assets
 
 ### Vector Icons (converted from iOS SVG)
-| Asset | Description | Size |
-|-------|-------------|------|
-| `ic_back` | Back navigation arrow | 24dp |
-| `ic_search` | Search icon | 24dp |
-| `ic_call` | Phone call icon | 24dp |
-| `ic_attach` | Attachment icon | 24dp |
-| `ic_chevron_up` | Chevron up arrow | 24dp |
-| `ic_label` | Label/tag icon | 24dp |
-| `ic_sticker` | Sticker icon | 24dp |
-| `ic_mic` | Microphone icon | 24dp |
-| `ic_play` | Play button icon | 24dp |
-| `ic_checkmark_read` | Double checkmark (read) | 16dp |
-| `ic_edit` | Edit indicator | 10dp |
-| `ic_plus` | Add reaction button | 22dp |
+
+All icons are normalized to a **24x24 viewport** with content centered using `<group>` transforms. This ensures consistent sizing and prevents stretching when icons have non-square original dimensions.
+
+| Asset | Description | Size | Original SVG | Centering |
+|-------|-------------|------|--------------|-----------|
+| `ic_back` | Back navigation arrow | 24dp | 9x16 | translateX="7.5", translateY="4" |
+| `ic_search` | Search icon | 24dp | 18x18 | Native (square) |
+| `ic_call` | Phone call icon | 24dp | 18x18 | Native (square) |
+| `ic_attach` | Attachment icon | 24dp | 14x22 | translateX="5", translateY="1" |
+| `ic_chevron_up` | Chevron up arrow | 24dp | 14x8 | translateX="5", translateY="8" |
+| `ic_label` | Label/tag icon | 24dp | 20x20 | translateX="2", translateY="2" |
+| `ic_sticker` | Sticker icon | 24dp | 20x20 | translateX="2", translateY="2" |
+| `ic_mic` | Microphone icon | 24dp | 18x23 | translateX="3", translateY="0.5" |
+| `ic_play` | Play button icon | 24dp | 12x14 | translateX="6", translateY="5" |
+| `ic_checkmark_read` | Double checkmark (read) | 16dp | 16x8 | Native |
+| `ic_edit` | Edit indicator | 10dp | 10x10 | Native (square) |
+| `ic_plus` | Add reaction button | 22dp | 22x22 | Native (square) |
+
+**Icon Normalization Pattern:**
+```xml
+<vector android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <group android:translateX="X" android:translateY="Y">
+        <path android:pathData="..." android:fillColor="#000000" />
+    </group>
+</vector>
+```
 
 ### Image Assets (PNG)
 | Asset | Description |
@@ -213,12 +226,13 @@ sealed class Message {
 - [x] Light/dark theme toggle in header
 - [x] TDM design system colors (light + dark)
 - [x] Roboto typography matching iOS specs
-- [x] Vector drawable icons converted from iOS
+- [x] Vector drawable icons converted from iOS (normalized to 24x24 viewport)
 - [x] Gradient backgrounds for outgoing messages (dark mode)
 - [x] Circular avatars with ViewOutlineProvider
 - [x] Waveform visualization for voice messages
 - [x] Reactions display on image messages
 - [x] Adaptive launcher icons
+- [x] Icon centering fix - all icons properly centered in 24x24 viewport
 
 ### Sample Messages
 The app displays sample messages matching the iOS version:
