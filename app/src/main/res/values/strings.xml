@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chat Screen</string>
+
+    <!-- Header -->
+    <string name="chat_title">Новый проект</string>
+    <string name="chat_subtitle">24 участника</string>
+
+    <!-- Input -->
+    <string name="message_placeholder">Написать сообщение</string>
+
+    <!-- Date Separators -->
+    <string name="date_today">Сегодня</string>
+    <string name="date_november_24">24 ноября</string>
+
+    <!-- Sample Messages -->
+    <string name="message_outgoing_1">Добрый день! Работа почти завершена. Осталось внести последние правки</string>
+    <string name="message_outgoing_2">Здравствуйте! Да, почти закончил. Осталось поправить шрифты и иконку. Вышлю до 12:00.</string>
+    <string name="message_incoming_1">Доброе утро! Напоминаю, что завтра крайний срок по экрану онбординга.\nИгорь, у тебя готов финальный макет? Светлана просила прислать ей сегодня до 14:00.</string>
+
+    <!-- Sample Sender Names -->
+    <string name="sender_timur">Тимур Петрович</string>
+    <string name="sender_anna">Анна Ковалёва</string>
+
+    <!-- Content Descriptions for Accessibility -->
+    <string name="cd_back_button">Назад</string>
+    <string name="cd_search_button">Поиск</string>
+    <string name="cd_call_button">Позвонить</string>
+    <string name="cd_theme_toggle">Переключить тему</string>
+    <string name="cd_attach_button">Прикрепить</string>
+    <string name="cd_label_button">Метка</string>
+    <string name="cd_sticker_button">Стикер</string>
+    <string name="cd_mic_button">Голосовое сообщение</string>
+    <string name="cd_play_button">Воспроизвести</string>
+    <string name="cd_add_reaction">Добавить реакцию</string>
+    <string name="cd_avatar">Аватар</string>
+    <string name="cd_photo">Фото</string>
+</resources>

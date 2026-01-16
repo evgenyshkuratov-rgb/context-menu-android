@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/message_spacing">
+
+    <!-- Avatar -->
+    <ImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="@dimen/message_avatar_size"
+        android:layout_height="@dimen/message_avatar_size"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/cd_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/bubbleContainer"
+        tools:src="@drawable/avatar_2" />
+
+    <!-- Bubble Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bubbleContainer"
+        android:layout_width="287dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/avatar_bubble_spacing"
+        android:background="@drawable/bg_bubble_incoming"
+        android:clipChildren="true"
+        app:layout_constraintStart_toEndOf="@id/ivAvatar"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Sender Name -->
+        <TextView
+            android:id="@+id/tvSenderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/bubble_padding_vertical"
+            android:layout_marginStart="@dimen/bubble_padding_horizontal"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Анна Ковалёва"
+            tools:textColor="@color/avatar_10" />
+
+        <!-- Photo Image -->
+        <ImageView
+            android:id="@+id/ivPhoto"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/image_message_height"
+            android:layout_marginTop="@dimen/content_spacing_medium"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/cd_photo"
+            app:layout_constraintTop_toBottomOf="@id/tvSenderName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:src="@drawable/photo_sample" />
+
+        <!-- Time Badge -->
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:background="@drawable/bg_time_badge"
+            android:paddingHorizontal="@dimen/time_badge_padding_horizontal"
+            android:paddingVertical="@dimen/time_badge_padding_vertical"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="11:23" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Reactions Container -->
+    <LinearLayout
+        android:id="@+id/reactionsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/reaction_bubble_height"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/bubbleContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Reaction Bubble -->
+        <LinearLayout
+            android:id="@+id/reactionBubble"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/reaction_bubble_height"
+            android:background="@drawable/bg_reaction"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:id="@+id/tvEmoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                tools:text="\uD83D\uDC4C" />
+
+            <TextView
+                android:id="@+id/tvReactionCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:textColor="@color/text_primary_90"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"
+                tools:text="2" />
+
+        </LinearLayout>
+
+        <!-- Add Reaction Button -->
+        <ImageButton
+            android:id="@+id/btnAddReaction"
+            android:layout_width="@dimen/add_reaction_button_size"
+            android:layout_height="@dimen/add_reaction_button_size"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_add_reaction"
+            android:contentDescription="@string/cd_add_reaction"
+            android:src="@drawable/ic_plus"
+            android:scaleType="center"
+            app:tint="@color/text_primary" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

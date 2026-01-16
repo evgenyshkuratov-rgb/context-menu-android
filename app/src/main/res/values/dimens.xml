@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header -->
+    <dimen name="header_height">56dp</dimen>
+    <dimen name="header_avatar_size">40dp</dimen>
+    <dimen name="header_button_size">36dp</dimen>
+
+    <!-- Message Avatars -->
+    <dimen name="message_avatar_size">32dp</dimen>
+
+    <!-- Bubbles -->
+    <dimen name="bubble_corner_radius">14dp</dimen>
+    <dimen name="bubble_max_width_outgoing">311dp</dimen>
+    <dimen name="bubble_max_width_incoming">287dp</dimen>
+    <dimen name="bubble_padding_vertical">8dp</dimen>
+    <dimen name="bubble_padding_horizontal">12dp</dimen>
+
+    <!-- Message Spacing -->
+    <dimen name="message_spacing">12dp</dimen>
+    <dimen name="avatar_bubble_spacing">8dp</dimen>
+
+    <!-- Voice Message -->
+    <dimen name="play_button_size">40dp</dimen>
+    <dimen name="play_button_radius">20dp</dimen>
+    <dimen name="waveform_bar_width">3dp</dimen>
+    <dimen name="waveform_bar_spacing">2dp</dimen>
+
+    <!-- Input Panel -->
+    <dimen name="input_panel_height">80dp</dimen>
+    <dimen name="toolbar_button_size">36dp</dimen>
+    <dimen name="toolbar_button_size_large">40dp</dimen>
+    <dimen name="chevron_button_radius">18dp</dimen>
+
+    <!-- Date Separator -->
+    <dimen name="date_separator_height">24dp</dimen>
+    <dimen name="date_separator_corner_radius">12dp</dimen>
+    <dimen name="date_separator_padding_vertical">4dp</dimen>
+    <dimen name="date_separator_padding_horizontal">8dp</dimen>
+
+    <!-- Image Message -->
+    <dimen name="image_message_height">311dp</dimen>
+    <dimen name="time_badge_corner_radius">12dp</dimen>
+    <dimen name="time_badge_padding_vertical">4dp</dimen>
+    <dimen name="time_badge_padding_horizontal">8dp</dimen>
+
+    <!-- Reactions -->
+    <dimen name="reaction_bubble_height">32dp</dimen>
+    <dimen name="reaction_bubble_corner_radius">16dp</dimen>
+    <dimen name="add_reaction_button_size">32dp</dimen>
+
+    <!-- Icons -->
+    <dimen name="icon_size_standard">24dp</dimen>
+    <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="icon_size_edit">10dp</dimen>
+
+    <!-- Margins & Padding -->
+    <dimen name="screen_margin_horizontal">8dp</dimen>
+    <dimen name="content_spacing_small">4dp</dimen>
+    <dimen name="content_spacing_medium">8dp</dimen>
+    <dimen name="content_spacing_large">12dp</dimen>
+    <dimen name="content_spacing_xlarge">16dp</dimen>
+</resources>

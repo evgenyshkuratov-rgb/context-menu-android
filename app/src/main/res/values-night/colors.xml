@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TDM Design System Colors - Dark Mode -->
+
+    <!-- Background Colors -->
+    <color name="background_base">#1A1A1A</color>
+    <color name="background_second">#313131</color>
+    <color name="background_sheet_or_modal">#232325</color>
+    <color name="background_message_screen">#0F0F10</color>
+    <color name="background_someone_message">#373737</color>
+    <color name="background_badge_muted">#484848</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_primary_90">#E6FFFFFF</color>
+    <color name="text_primary_55">#8CFFFFFF</color>
+    <color name="text_primary_50">#80FFFFFF</color>
+    <color name="text_primary_40">#66FFFFFF</color>
+    <color name="text_primary_30">#4DFFFFFF</color>
+    <color name="text_primary_08">#14FFFFFF</color>
+    <color name="text_primary_10">#1AFFFFFF</color>
+
+    <!-- Inverted Colors -->
+    <color name="inverted_primary">#000000</color>
+
+    <!-- System Colors (same in both modes) -->
+    <color name="system_danger">#E06141</color>
+    <color name="system_danger_hover">#C94626</color>
+    <color name="system_danger_pressed">#B03E22</color>
+    <color name="system_warning">#DC9B1C</color>
+    <color name="system_info">#509EF9</color>
+    <color name="system_success">#40B259</color>
+    <color name="system_success_hover">#339C4A</color>
+    <color name="system_success_pressed">#318D46</color>
+    <color name="system_online">#04CB00</color>
+
+    <!-- Primary (Theme) Colors -->
+    <color name="primary_default">#3886E1</color>
+    <color name="primary_opacity_50">#803886E1</color>
+    <color name="primary_opacity_30">#4D3886E1</color>
+    <color name="primary_opacity_10">#1A3886E1</color>
+
+    <!-- Accent Colors -->
+    <color name="accent_new_badge">#E5505A</color>
+    <color name="accent_text_or_icon">#71ADF2</color>
+    <color name="accent_theme">#D9FFFFFF</color>
+    <color name="accent_vks">#516AE9</color>
+    <color name="accent_vks_hover">#4159D0</color>
+    <color name="accent_vks_pressed">#364DC1</color>
+
+    <!-- Avatar Colors (Dark) -->
+    <color name="avatar_0">#84E3F3</color>
+    <color name="avatar_1">#FEB085</color>
+    <color name="avatar_2">#B1EC5F</color>
+    <color name="avatar_3">#E1D6FE</color>
+    <color name="avatar_4">#FED873</color>
+    <color name="avatar_5">#AED3FE</color>
+    <color name="avatar_6">#FFA573</color>
+    <color name="avatar_7">#95DDA1</color>
+    <color name="avatar_8">#FEA2D3</color>
+    <color name="avatar_9">#FEB085</color>
+    <color name="avatar_10">#EFAFFA</color>
+    <color name="avatar_saved">#A8A8A8</color>
+
+    <!-- Message Theme Colors (Gradient in Dark Mode) -->
+    <color name="my_message_start">#2B5D95</color>
+    <color name="my_message_end">#284A70</color>
+    <color name="system_message">#1A1A1A</color>
+
+    <!-- Additional UI Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="time_badge_background">#CC000000</color>
+</resources>

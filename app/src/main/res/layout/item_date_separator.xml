@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/date_separator_height"
+    android:layout_marginBottom="@dimen/message_spacing">
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_date_pill"
+        android:paddingHorizontal="@dimen/date_separator_padding_horizontal"
+        android:paddingVertical="@dimen/date_separator_padding_vertical"
+        android:textColor="@color/text_primary_50"
+        android:textSize="13sp"
+        android:fontFamily="sans-serif"
+        tools:text="Сегодня" />
+
+</FrameLayout>
