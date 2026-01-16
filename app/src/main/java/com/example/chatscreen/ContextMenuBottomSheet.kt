@@ -1,14 +1,27 @@
 package com.example.chatscreen
 
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import com.example.chatscreen.databinding.BottomSheetContextMenuBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class ContextMenuBottomSheet : BottomSheetDialogFragment() {
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        dialog.setOnShowListener {
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.background = ColorDrawable(Color.TRANSPARENT)
+        }
+        return dialog
+    }
 
     private var _binding: BottomSheetContextMenuBinding? = null
     private val binding get() = _binding!!

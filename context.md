@@ -32,10 +32,13 @@ ContextMenuAndroid/
 Tap on any message to show the context menu bottom sheet.
 
 ### Components
-- **Reaction bar**: Separate floating panel above bottom sheet
+- **Reaction bar**: Separate floating panel above bottom sheet (transparent dialog background)
   - Rounded container (25dp radius) with `background_sheet_or_modal` color
-  - 👍 👎 🔥 👌 🤔 + add button (44dp each, no visible backgrounds)
-  - 6dp internal padding, 8dp gap below panel
+  - Full width with 8dp horizontal margins
+  - 👍 👎 🔥 👌 🤔 + add button (evenly spaced with `layout_weight`)
+  - Add button has circular `background_second` background
+  - 12dp horizontal padding, 6dp vertical padding, 8dp gap below panel
+  - Ripple effect on press (no visible default backgrounds on emojis)
 - **Drag handle**: 36x4dp rounded indicator
 - **Actions list** (48dp height each):
 
@@ -55,10 +58,11 @@ Tap on any message to show the context menu bottom sheet.
 ### Drawables
 | Asset | Description |
 |-------|-------------|
-| `bg_bottom_sheet` | Rounded top corners (20dp) for main sheet |
+| `bg_bottom_sheet` | Rounded top corners (20dp) for main sheet, extends to bottom with 24dp padding |
 | `bg_reaction_bar` | Rounded container (25dp) for reaction panel |
 | `bg_drag_handle` | Gray pill indicator |
-| `bg_reaction_item` | Pressed state for emoji buttons (transparent default) |
+| `bg_reaction_item` | Ripple effect for emoji buttons (transparent default, oval mask) |
+| `bg_add_reaction_button` | Circular background (`background_second`) with ripple for plus button |
 | `bg_action_item` | Pressed state for action rows |
 
 ### Usage
@@ -161,7 +165,9 @@ sealed class Message {
 - [x] Edge-to-edge display with safe area handling
 - [x] Circular avatars, waveform visualization, reactions
 - [x] **Context menu bottom sheet** (tap on any message)
-- [x] Reaction bar as separate floating panel (matching Figma design)
+- [x] Transparent dialog background (reaction bar and sheet are separate visual elements)
+- [x] Reaction bar: full-width, evenly spaced emojis, circular add button with background
+- [x] Bottom sheet extends to screen bottom with internal padding
 - [x] 10 action items with icons and press states
 - [x] Copy action copies text to clipboard
 - [x] Simplified input toolbar (removed chevron button)

@@ -5,25 +5,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="24dp">
+    android:background="@android:color/transparent">
 
-    <!-- Reaction Bar Panel (separate floating panel) -->
+    <!-- Reaction Bar Panel (separate floating panel, full width with 8dp side margins) -->
     <LinearLayout
         android:id="@+id/reactionBar"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:layout_marginHorizontal="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/bg_reaction_bar"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingHorizontal="6dp"
+        android:paddingHorizontal="12dp"
         android:paddingVertical="6dp">
 
         <TextView
             android:id="@+id/reaction1"
-            android:layout_width="44dp"
+            android:layout_width="0dp"
             android:layout_height="44dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_reaction_item"
             android:gravity="center"
             android:text="👍"
@@ -31,9 +32,9 @@
 
         <TextView
             android:id="@+id/reaction2"
-            android:layout_width="44dp"
+            android:layout_width="0dp"
             android:layout_height="44dp"
-            android:layout_marginStart="4dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_reaction_item"
             android:gravity="center"
             android:text="👎"
@@ -41,9 +42,9 @@
 
         <TextView
             android:id="@+id/reaction3"
-            android:layout_width="44dp"
+            android:layout_width="0dp"
             android:layout_height="44dp"
-            android:layout_marginStart="4dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_reaction_item"
             android:gravity="center"
             android:text="🔥"
@@ -51,9 +52,9 @@
 
         <TextView
             android:id="@+id/reaction4"
-            android:layout_width="44dp"
+            android:layout_width="0dp"
             android:layout_height="44dp"
-            android:layout_marginStart="4dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_reaction_item"
             android:gravity="center"
             android:text="👌"
@@ -61,23 +62,30 @@
 
         <TextView
             android:id="@+id/reaction5"
-            android:layout_width="44dp"
+            android:layout_width="0dp"
             android:layout_height="44dp"
-            android:layout_marginStart="4dp"
+            android:layout_weight="1"
             android:background="@drawable/bg_reaction_item"
             android:gravity="center"
             android:text="🤔"
             android:textSize="28sp" />
 
-        <ImageView
-            android:id="@+id/btnAddReaction"
-            android:layout_width="44dp"
+        <FrameLayout
+            android:layout_width="0dp"
             android:layout_height="44dp"
-            android:layout_marginStart="4dp"
-            android:background="@drawable/bg_reaction_item"
-            android:padding="10dp"
-            android:src="@drawable/ic_plus"
-            app:tint="@color/text_primary_55" />
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/btnAddReaction"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_add_reaction_button"
+                android:padding="10dp"
+                android:src="@drawable/ic_plus"
+                app:tint="@color/text_primary_55" />
+
+        </FrameLayout>
 
     </LinearLayout>
 
@@ -86,7 +94,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_bottom_sheet"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="24dp">
 
         <!-- Drag Handle -->
         <View
