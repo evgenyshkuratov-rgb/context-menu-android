@@ -223,7 +223,14 @@ adb shell am start -n com.example.chatscreen/.MainActivity
 - [ ] Action handlers (reply, forward, pin, etc.)
 - [ ] Keyboard handling for text input
 - [ ] Connect to data layer
+- [ ] Two-state context menu (primary/secondary actions with toggle)
+- [ ] Message snapshot in context menu overlay
+
+## Testing
+Tested on:
+- **Physical device**: Samsung SM-G960F (Android 10)
+- **Emulator**: Pixel 6 (Android 16 / API 36)
 
 ## Related
-- **iOS Version**: Full context menu with animations, Perfect/Simple variants
+- **iOS Version**: Full context menu with animations, Apple Photos Lift style
 - **Repository**: https://github.com/evgenyshkuratov-rgb/context-menu-android
