@@ -11,20 +11,57 @@
 ContextMenuAndroid/
 ├── app/src/main/
 │   ├── java/com/example/chatscreen/
-│   │   ├── MainActivity.kt              # Chat UI, theme toggle, context menu trigger
-│   │   ├── Message.kt                   # Sealed class for message types
-│   │   ├── MessageAdapter.kt            # RecyclerView adapter with click handling
-│   │   ├── ContextMenuBottomSheet.kt    # Bottom sheet with reactions & actions
-│   │   └── CircleOutlineProvider.kt     # Circular avatar clipping
+│   │   ├── data/
+│   │   │   └── SampleData.kt              # Sample messages for testing
+│   │   ├── model/
+│   │   │   └── Message.kt                 # Sealed class + Reaction data class
+│   │   ├── ui/
+│   │   │   ├── MainActivity.kt            # Chat screen + gesture handlers
+│   │   │   ├── adapter/
+│   │   │   │   └── MessageAdapter.kt      # RecyclerView adapter + ViewHolders
+│   │   │   └── contextmenu/
+│   │   │       ├── ContextMenuBottomSheet.kt  # Bottom sheet with reactions & actions
+│   │   │       └── MenuAnimationStyle.kt      # Animation style enum
+│   │   └── util/
+│   │       ├── Constants.kt               # All magic numbers centralized
+│   │       ├── CircleOutlineProvider.kt   # Circular avatar clipping
+│   │       └── MessageGestureDetector.kt  # Custom gesture detection
 │   ├── res/layout/
-│   │   ├── activity_main.xml            # Main chat screen
-│   │   ├── bottom_sheet_context_menu.xml # Context menu layout
-│   │   └── item_message_*.xml           # Message layouts (outgoing, incoming, voice, image, date)
-│   ├── res/drawable/                    # Icons, shapes, backgrounds
-│   ├── res/values/                      # Colors, dimens, strings, themes
-│   └── res/values-night/                # Dark mode overrides
+│   │   ├── activity_main.xml              # Main chat screen
+│   │   ├── bottom_sheet_context_menu.xml  # Context menu layout
+│   │   └── item_message_*.xml             # Message layouts
+│   ├── res/drawable/                      # Icons, shapes, backgrounds
+│   ├── res/values/                        # Colors, dimens, strings, themes
+│   └── res/values-night/                  # Dark mode overrides
 ├── build.gradle.kts
 └── context.md
+```
+
+## Constants (util/Constants.kt)
+
+All magic numbers are centralized for easy maintenance:
+
+```kotlin
+// Animation timing
+Constants.Animation.QUICK_MS           // 80ms
+Constants.Animation.STANDARD_MS        // 150ms
+Constants.Animation.MEDIUM_MS          // 200ms
+
+// Bubble press feedback
+Constants.BubbleAnimation.PRESSED_SCALE    // 0.96f
+Constants.BubbleAnimation.PRESS_DURATION_MS // 80ms
+
+// Haptic feedback
+Constants.Haptic.TAP_AMPLITUDE         // 25
+Constants.Haptic.LONG_PRESS_AMPLITUDE  // 50
+
+// Quick reaction animation
+Constants.QuickReaction.EMOJI_SIZE_SP  // 48f
+Constants.QuickReaction.DEFAULT_EMOJI  // "❤️"
+
+// Selection state
+Constants.Selection.OVERLAY_COLOR      // "#2A2196F3"
+Constants.Selection.CHECKMARK_SIZE_DP  // 28
 ```
 
 ## Context Menu (Bottom Sheet)
@@ -34,24 +71,25 @@ Tap on any message row (bubble or surrounding area) to show the context menu bot
 ### Animation System
 The context menu features a polished animation sequence:
 
-1. **Haptic Feedback**: Very light tick vibration (10ms, amplitude 30) on tap
-2. **Bubble Animation**: Spring bounce effect (shrinks to 88% → springs back with overshoot)
+1. **Haptic Feedback**: Light tick vibration (8ms, amplitude 25) on tap
+2. **Bubble Animation**: Spring bounce effect (shrinks to 96% → springs back with overshoot)
 3. **Menu Appearance**: Staggered item animations
-   - Reactions pop in one by one (150ms duration, 30ms delay between each, overshoot interpolator)
+   - Reactions pop in one by one (150ms duration, 30ms delay between each)
    - Action items slide in from left (150ms duration, 20ms delay between each)
 
-**Dependencies**: `androidx.dynamicanimation:dynamicanimation:1.0.0` for SpringAnimation
-
-**Permissions**: `android.permission.VIBRATE` for haptic feedback
+### Animation Styles (MenuAnimationStyle)
+```kotlin
+enum class MenuAnimationStyle {
+    TELEGRAM,   // Fade in with upward translation
+    IMESSAGE,   // Scale up with overshoot
+    WHATSAPP    // Staggered pop-in for reactions, slide-in for actions
+}
+```
 
 ### Components
-- **Reaction bar**: Separate floating panel above bottom sheet (transparent dialog background)
-  - Rounded container (25dp radius) with `background_sheet_or_modal` color
-  - Full width with 8dp horizontal margins
-  - 👍 👎 🔥 👌 🤔 + add button (evenly spaced with `layout_weight`)
-  - Add button (38dp) has circular `background_second` background
-  - 12dp horizontal padding, 6dp vertical padding, 8dp gap below panel
-  - Ripple effect on press (no visible default backgrounds on emojis)
+- **Reaction bar**: Floating panel above bottom sheet
+  - 👍 👎 🔥 👌 🤔 + add button
+  - 25dp corner radius, evenly spaced with `layout_weight`
 - **Drag handle**: 36x4dp rounded indicator
 - **Actions list** (48dp height each):
 
@@ -68,78 +106,59 @@ The context menu features a polished animation sequence:
 | Выбрать (Select) | `ic_check_outline` | `text_primary_55` |
 | Удалить (Delete) | `ic_delete` | `system_danger` |
 
-### Drawables
-| Asset | Description |
-|-------|-------------|
-| `bg_bottom_sheet` | Rounded top corners (20dp) for main sheet, extends to bottom with 24dp padding |
-| `bg_reaction_bar` | Rounded container (25dp) for reaction panel |
-| `bg_drag_handle` | Gray pill indicator |
-| `bg_reaction_item` | Ripple effect for emoji buttons (transparent default, oval mask) |
-| `bg_add_reaction_button` | Circular background (`background_second`) with ripple for plus button |
-| `bg_action_item` | Pressed state for action rows |
-
 ### Usage
 ```kotlin
-// In MessageAdapter - click listener on root for larger tap area
-binding.root.setOnClickListener {
-    clickListener?.onMessageClick(message, message.text, true, binding.bubbleContainer)
-}
+// In MessageAdapter - gesture detector calls listener
+gestureListener?.onMessageTap(message, message.text, isOutgoing, bubbleView)
 
-// In MainActivity - animate bubble then show menu
-override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
-    animateBubble(anchorView) {
-        ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
-            .show(supportFragmentManager, "ContextMenuBottomSheet")
-    }
-}
-
-private fun animateBubble(view: View, onComplete: () -> Unit) {
-    vibrator?.vibrate(VibrationEffect.createOneShot(10, 30))
-    view.animate().scaleX(0.88f).scaleY(0.88f).setDuration(100).withEndAction {
-        SpringAnimation(view, SpringAnimation.SCALE_X, 1f).apply {
-            spring.stiffness = SpringForce.STIFFNESS_LOW
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
-            start()
-        }
-        SpringAnimation(view, SpringAnimation.SCALE_Y, 1f).apply {
-            spring.stiffness = SpringForce.STIFFNESS_LOW
-            spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
-            start()
-        }
-        view.postDelayed(onComplete, 150)
-    }.start()
+// In MainActivity - show context menu
+override fun onMessageTap(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
+    vibrate(Constants.Haptic.TAP_DURATION_MS, Constants.Haptic.TAP_AMPLITUDE)
+    ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
+        .show(supportFragmentManager, TAG_CONTEXT_MENU)
 }
 ```
 
-## Vector Icons
+## Message Gesture System
 
-All icons normalized to **24x24 viewport**. Non-square icons use `<group>` transforms for centering.
+Three-gesture system with visual feedback that follows finger state.
 
-### Chat UI Icons
-| Icon | Description | Notes |
-|------|-------------|-------|
-| `ic_back`, `ic_search`, `ic_call` | Header navigation | Centered with translateX/Y |
-| `ic_attach`, `ic_label`, `ic_sticker`, `ic_mic` | Input toolbar | `fillType="evenOdd"` for outlines |
-| `ic_play`, `ic_plus` | UI controls | |
-| `ic_checkmark_read` (16dp), `ic_edit` (10dp) | Message indicators | Native size |
-| `ic_theme_light`, `ic_theme_dark` | Theme toggle | Sun/moon icons |
+### Gesture Types
+| Gesture | Action | Visual Feedback | Haptic |
+|---------|--------|-----------------|--------|
+| **Single tap** (200ms delay) | Open context menu | Scale down → bounce back | 8ms, amplitude 25 |
+| **Double tap** | Quick reaction (❤️) | Heart emoji floats up | 5ms, amplitude 20 |
+| **Long press** (~400ms) | Select message | Blue overlay + checkmark badge | 15ms, amplitude 50 |
 
-### Context Menu Icons
-| Icon | Description |
-|------|-------------|
-| `ic_reply` | Reply arrow |
-| `ic_forward` | Forward arrow |
-| `ic_comment` | Comment bubbles |
-| `ic_pin` | Pin/tack |
-| `ic_copy` | Copy squares |
-| `ic_tag` | Label tag (stroke) |
-| `ic_saved` | Bookmark (stroke) |
-| `ic_read_done` | Double checkmark |
-| `ic_check_outline` | Circle checkmark |
-| `ic_delete` | Trash bin (red #E06141) |
+### MessageGestureDetector
+Custom gesture detector that separates visual feedback from gesture recognition:
 
-### Image Assets
-`avatar_1.png`, `avatar_2.png`, `avatar_header.png`, `photo_sample.png`
+```kotlin
+class MessageGestureDetector(context: Context, listener: OnGestureListener) {
+    interface OnGestureListener {
+        fun onTouchDown()    // Finger pressed - scale down
+        fun onTouchUp()      // Finger lifted - scale back
+        fun onLongPress()    // Long press detected - select
+        fun onDoubleTap()    // Double tap detected - react
+        fun onSingleTap()    // Single tap confirmed - open menu
+    }
+}
+```
+
+### Selection State
+When message is selected via long press:
+- **Blue overlay** (16% opacity primary color) covers the bubble
+- **Checkmark badge** (28dp circle) appears at bottom-right corner
+- Badge animates in with overshoot interpolator
+- Long press again to deselect (with fade-out animation)
+
+### Quick Reaction Animation
+Double tap triggers floating emoji:
+1. Create 48sp emoji TextView at bubble center
+2. Scale from 0.3 → 1.0 with fade in (150ms)
+3. Hold for 200ms
+4. Scale to 1.5 + translate up 100px + fade out (400ms)
+5. Remove view
 
 ## Design System
 
@@ -153,31 +172,10 @@ Colors auto-adapt via `values/` and `values-night/` qualifiers.
 | `background_message_screen` | #EFE7DE | #0F0F10 | Chat background |
 | `text_primary` | #000000 | #FFFFFF | Primary text |
 | `text_primary_55` | 55% black | 55% white | Icons |
-| `text_primary_08` | 8% black | 8% white | Pressed states |
 | `my_message_start/end` | #FFFAF3 | #2B5D95/#284A70 | Outgoing gradient |
 | `system_danger` | #E06141 | #E06141 | Delete actions |
 
-### Typography
-| Style | Size | Font |
-|-------|------|------|
-| Message text | 15sp + 2sp line spacing | `sans-serif` |
-| Sender name | 16sp | `sans-serif-medium` |
-| Time/Caption | 12sp | `sans-serif` |
-| Context menu action | 15sp | `sans-serif` |
-
-## Key Dimensions
-| Element | Size |
-|---------|------|
-| Header height | 56dp |
-| Avatar (header/messages) | 40dp / 32dp |
-| Bubble max width | 311dp (out) / 287dp (in) |
-| Bubble padding | 12dp H / 8dp V |
-| Icon size / alpha | 24dp / 55% |
-| Context menu action height | 48dp |
-| Reaction emoji button | 44dp |
-| Add reaction button | 38dp |
-
-## Message Types
+## Message Types (model/Message.kt)
 ```kotlin
 sealed class Message {
     data class OutgoingText(text: String, time: String, isEdited: Boolean, isRead: Boolean)
@@ -186,21 +184,41 @@ sealed class Message {
     data class Image(senderName: String, senderAvatarIndex: Int, imageResId: Int, time: String, reactions: List<Reaction>?)
     data class DateSeparator(date: String)
 }
+
+data class Reaction(val emoji: String, val count: Int)
 ```
+
+## Key Files
+| File | Purpose |
+|------|---------|
+| `ui/MainActivity.kt` | Chat UI, gesture handlers, selection/reaction logic |
+| `ui/adapter/MessageAdapter.kt` | RecyclerView adapter with 5 ViewHolders |
+| `ui/contextmenu/ContextMenuBottomSheet.kt` | Bottom sheet with reactions + actions |
+| `ui/contextmenu/MenuAnimationStyle.kt` | Animation style enum |
+| `util/Constants.kt` | All magic numbers centralized |
+| `util/MessageGestureDetector.kt` | Custom gesture detection with touch state |
+| `model/Message.kt` | Sealed class for message types |
+| `data/SampleData.kt` | Sample messages for testing |
 
 ## Code Architecture
 
-### Performance Optimizations
-- RecyclerView: `setHasFixedSize(true)` + `itemAnimator = null` for smoother scrolling
-- Single shared `CircleOutlineProvider` instance (not recreated per ViewHolder)
-- Lazy initialization of `Vibrator` service
-- Cached density/color values in ViewHolders
+### Package Organization
+- **data/**: Data sources (SampleData, future repositories)
+- **model/**: Data classes (Message, Reaction)
+- **ui/**: Activities, adapters, UI components
+- **util/**: Utilities (Constants, gesture detector, outline provider)
 
-### Code Organization
-- **MessageAdapter**: Common `setupSender()` and `setupAvatar()` helpers reduce duplication
-- **ContextMenuBottomSheet**: `dismissWithToast()` helper, extracted clipboard logic
-- **MainActivity**: Sample data extracted to `SampleData` object
-- **ViewType/Avatar**: Constants grouped in nested objects
+### Performance Optimizations
+- RecyclerView: `setHasFixedSize(true)` + `itemAnimator = null`
+- Single shared `CircleOutlineProvider` instance
+- Lazy initialization of `Vibrator` service
+- Extracted gesture detector setup to reduce duplication
+
+### Code Quality
+- All magic numbers in `Constants.kt`
+- String resources for all user-visible text
+- Proper imports (no fully-qualified names in code)
+- Extracted helper methods for readability
 
 ## Implemented Features
 - [x] Chat screen UI (header, messages, input panel)
@@ -208,33 +226,30 @@ sealed class Message {
 - [x] RecyclerView with ViewBinding
 - [x] Light/dark theme toggle
 - [x] TDM design system colors
-- [x] Vector icons from iOS (24x24 normalized)
+- [x] Vector icons (24x24 normalized)
 - [x] Edge-to-edge display with safe area handling
-- [x] Circular avatars, waveform visualization, reactions
 - [x] **Context menu bottom sheet** (tap on any message row)
-- [x] Transparent dialog background (reaction bar and sheet are separate visual elements)
-- [x] Reaction bar: full-width, evenly spaced emojis, circular add button with background
-- [x] Bottom sheet extends to screen bottom with internal padding
-- [x] 10 action items with icons and press states
-- [x] Copy action copies text to clipboard
-- [x] Simplified input toolbar (removed chevron button)
-- [x] **Expanded tap area** (entire message row, not just bubble)
-- [x] **Haptic feedback** (light tick vibration on tap)
-- [x] **Spring bounce bubble animation** (shrink → spring back)
-- [x] **Staggered menu animations** (reactions pop in, actions slide in)
+- [x] **Three-gesture system** (tap, double-tap, long-press)
+- [x] **Touch-based bubble animation** (follows finger)
+- [x] **Message selection** with visual feedback
+- [x] **Quick reaction** with floating emoji
+- [x] **Haptic feedback** for all gestures
+- [x] **Staggered menu animations** (WhatsApp style)
+- [x] **Centralized constants** (Constants.kt)
+- [x] **Clean package structure** (ui/, model/, util/, data/)
 
 ## Build & Run
 ```bash
 ./gradlew assembleDebug
 adb install app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.example.chatscreen/.MainActivity
+adb shell am start -n com.example.chatscreen/.ui.MainActivity
 ```
 
 ## Future Enhancements
-- [ ] Long press gesture (currently uses tap)
+- [ ] Persist selection state across scroll
+- [ ] Multi-select mode with action bar
+- [ ] Reaction picker (full emoji set)
 - [ ] Action handlers (reply, forward, pin, etc.)
-- [ ] Keyboard handling for text input
-- [ ] Connect to data layer
 - [ ] Two-state context menu (primary/secondary actions with toggle)
 - [ ] Message snapshot in context menu overlay
 

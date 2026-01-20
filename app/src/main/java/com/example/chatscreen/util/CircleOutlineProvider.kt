@@ -1,11 +1,18 @@
-package com.example.chatscreen
+package com.example.chatscreen.util
 
 import android.graphics.Outline
 import android.view.View
 import android.view.ViewOutlineProvider
 
 /**
- * OutlineProvider that creates a circular outline for views (used for avatar images).
+ * ViewOutlineProvider that creates a circular outline for views.
+ * Used primarily for avatar images to create circular clipping.
+ *
+ * Usage:
+ * ```kotlin
+ * imageView.clipToOutline = true
+ * imageView.outlineProvider = CircleOutlineProvider()
+ * ```
  */
 class CircleOutlineProvider : ViewOutlineProvider() {
     override fun getOutline(view: View, outline: Outline) {

@@ -47,4 +47,9 @@
     <string name="action_viewed">Просмотрено</string>
     <string name="action_select">Выбрать</string>
     <string name="action_delete">Удалить</string>
+
+    <!-- Context Menu Feedback -->
+    <string name="reaction_format">Реакция: %s</string>
+    <string name="add_reaction">Добавить реакцию</string>
+    <string name="copied">Скопировано</string>
 </resources>

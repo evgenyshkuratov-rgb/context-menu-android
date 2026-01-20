@@ -1,27 +1,30 @@
-package com.example.chatscreen
+package com.example.chatscreen.ui.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.example.chatscreen.R
 import com.example.chatscreen.databinding.ItemDateSeparatorBinding
 import com.example.chatscreen.databinding.ItemMessageImageBinding
 import com.example.chatscreen.databinding.ItemMessageIncomingBinding
 import com.example.chatscreen.databinding.ItemMessageOutgoingBinding
 import com.example.chatscreen.databinding.ItemMessageVoiceBinding
+import com.example.chatscreen.model.Message
+import com.example.chatscreen.util.CircleOutlineProvider
+import com.example.chatscreen.util.Constants
+import com.example.chatscreen.util.MessageGestureDetector
 
 /**
- * Listener for message gesture events.
- * - onMessageTap: Single tap (delayed) - opens context menu
- * - onMessageDoubleTap: Double tap - quick reaction
- * - onMessageLongPress: Long press - select message
+ * Listener interface for message gesture events from the adapter.
  */
 interface OnMessageGestureListener {
-    /** Single tap - opens context menu (has small delay to differentiate from double tap) */
+    /** Single tap - opens context menu (delayed to differentiate from double tap) */
     fun onMessageTap(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View)
 
     /** Double tap - add quick reaction (e.g., ❤️) */
@@ -31,33 +34,10 @@ interface OnMessageGestureListener {
     fun onMessageLongPress(message: Message, isOutgoing: Boolean, anchorView: View)
 }
 
-/** Animation constants for bubble press feedback */
-private object BubbleAnimation {
-    const val PRESSED_SCALE = 0.96f
-    const val NORMAL_SCALE = 1f
-    const val PRESS_DURATION = 80L
-    const val RELEASE_DURATION = 150L
-}
-
-/** Animate bubble to pressed state */
-private fun View.animatePress() {
-    animate()
-        .scaleX(BubbleAnimation.PRESSED_SCALE)
-        .scaleY(BubbleAnimation.PRESSED_SCALE)
-        .setDuration(BubbleAnimation.PRESS_DURATION)
-        .start()
-}
-
-/** Animate bubble back to normal state */
-private fun View.animateRelease() {
-    animate()
-        .scaleX(BubbleAnimation.NORMAL_SCALE)
-        .scaleY(BubbleAnimation.NORMAL_SCALE)
-        .setDuration(BubbleAnimation.RELEASE_DURATION)
-        .setInterpolator(android.view.animation.OvershootInterpolator(1.5f))
-        .start()
-}
-
+/**
+ * RecyclerView adapter for chat messages.
+ * Supports 5 view types: outgoing text, incoming text, voice, image, date separator.
+ */
 class MessageAdapter(
     private val messages: List<Message>,
     private val gestureListener: OnMessageGestureListener? = null
@@ -114,6 +94,8 @@ class MessageAdapter(
 
     override fun getItemCount() = messages.size
 
+    // region Helper Methods
+
     private fun setupAvatar(imageView: ImageView, avatarIndex: Int) {
         imageView.setImageResource(Avatar.drawables[avatarIndex % Avatar.drawables.size])
         imageView.clipToOutline = true
@@ -130,6 +112,31 @@ class MessageAdapter(
         setupAvatar(avatarView, avatarIndex)
     }
 
+    /**
+     * Creates and attaches a gesture detector for a message bubble.
+     * Extracts common gesture handling pattern from all ViewHolders.
+     */
+    private fun createGestureDetector(
+        context: Context,
+        bubbleView: View,
+        rootView: View,
+        message: Message,
+        messageText: String?,
+        isOutgoing: Boolean
+    ): MessageGestureDetector {
+        return MessageGestureDetector(context, object : MessageGestureDetector.OnGestureListener {
+            override fun onTouchDown() = bubbleView.animatePress()
+            override fun onTouchUp() = bubbleView.animateRelease()
+            override fun onSingleTap() = gestureListener?.onMessageTap(message, messageText, isOutgoing, bubbleView) ?: Unit
+            override fun onDoubleTap() = gestureListener?.onMessageDoubleTap(message, isOutgoing, bubbleView) ?: Unit
+            override fun onLongPress() = gestureListener?.onMessageLongPress(message, isOutgoing, bubbleView) ?: Unit
+        }).also { it.attachToView(rootView) }
+    }
+
+    // endregion
+
+    // region ViewHolders
+
     inner class OutgoingTextViewHolder(
         private val binding: ItemMessageOutgoingBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -143,26 +150,14 @@ class MessageAdapter(
             binding.ivCheckmark.visibility = if (message.isRead) View.VISIBLE else View.GONE
 
             gestureDetector?.cleanup()
-            gestureDetector = MessageGestureDetector(
+            gestureDetector = createGestureDetector(
                 binding.root.context,
-                object : MessageGestureDetector.OnMessageGestureListener {
-                    override fun onTouchDown() {
-                        binding.bubbleContainer.animatePress()
-                    }
-                    override fun onTouchUp() {
-                        binding.bubbleContainer.animateRelease()
-                    }
-                    override fun onSingleTap() {
-                        gestureListener?.onMessageTap(message, message.text, true, binding.bubbleContainer)
-                    }
-                    override fun onDoubleTap() {
-                        gestureListener?.onMessageDoubleTap(message, true, binding.bubbleContainer)
-                    }
-                    override fun onLongPress() {
-                        gestureListener?.onMessageLongPress(message, true, binding.bubbleContainer)
-                    }
-                }
-            ).also { it.attachToView(binding.root) }
+                binding.bubbleContainer,
+                binding.root,
+                message,
+                message.text,
+                isOutgoing = true
+            )
         }
     }
 
@@ -178,26 +173,14 @@ class MessageAdapter(
             binding.tvTime.text = message.time
 
             gestureDetector?.cleanup()
-            gestureDetector = MessageGestureDetector(
+            gestureDetector = createGestureDetector(
                 binding.root.context,
-                object : MessageGestureDetector.OnMessageGestureListener {
-                    override fun onTouchDown() {
-                        binding.bubbleContainer.animatePress()
-                    }
-                    override fun onTouchUp() {
-                        binding.bubbleContainer.animateRelease()
-                    }
-                    override fun onSingleTap() {
-                        gestureListener?.onMessageTap(message, message.text, false, binding.bubbleContainer)
-                    }
-                    override fun onDoubleTap() {
-                        gestureListener?.onMessageDoubleTap(message, false, binding.bubbleContainer)
-                    }
-                    override fun onLongPress() {
-                        gestureListener?.onMessageLongPress(message, false, binding.bubbleContainer)
-                    }
-                }
-            ).also { it.attachToView(binding.root) }
+                binding.bubbleContainer,
+                binding.root,
+                message,
+                message.text,
+                isOutgoing = false
+            )
         }
     }
 
@@ -218,26 +201,14 @@ class MessageAdapter(
             setupWaveform(message.waveformHeights)
 
             gestureDetector?.cleanup()
-            gestureDetector = MessageGestureDetector(
+            gestureDetector = createGestureDetector(
                 binding.root.context,
-                object : MessageGestureDetector.OnMessageGestureListener {
-                    override fun onTouchDown() {
-                        binding.bubbleContainer.animatePress()
-                    }
-                    override fun onTouchUp() {
-                        binding.bubbleContainer.animateRelease()
-                    }
-                    override fun onSingleTap() {
-                        gestureListener?.onMessageTap(message, null, false, binding.bubbleContainer)
-                    }
-                    override fun onDoubleTap() {
-                        gestureListener?.onMessageDoubleTap(message, false, binding.bubbleContainer)
-                    }
-                    override fun onLongPress() {
-                        gestureListener?.onMessageLongPress(message, false, binding.bubbleContainer)
-                    }
-                }
-            ).also { it.attachToView(binding.root) }
+                binding.bubbleContainer,
+                binding.root,
+                message,
+                messageText = null,
+                isOutgoing = false
+            )
         }
 
         private fun setupWaveform(heights: List<Int>) {
@@ -274,26 +245,14 @@ class MessageAdapter(
             }
 
             gestureDetector?.cleanup()
-            gestureDetector = MessageGestureDetector(
+            gestureDetector = createGestureDetector(
                 binding.root.context,
-                object : MessageGestureDetector.OnMessageGestureListener {
-                    override fun onTouchDown() {
-                        binding.bubbleContainer.animatePress()
-                    }
-                    override fun onTouchUp() {
-                        binding.bubbleContainer.animateRelease()
-                    }
-                    override fun onSingleTap() {
-                        gestureListener?.onMessageTap(message, null, false, binding.bubbleContainer)
-                    }
-                    override fun onDoubleTap() {
-                        gestureListener?.onMessageDoubleTap(message, false, binding.bubbleContainer)
-                    }
-                    override fun onLongPress() {
-                        gestureListener?.onMessageLongPress(message, false, binding.bubbleContainer)
-                    }
-                }
-            ).also { it.attachToView(binding.root) }
+                binding.bubbleContainer,
+                binding.root,
+                message,
+                messageText = null,
+                isOutgoing = false
+            )
         }
     }
 
@@ -305,4 +264,29 @@ class MessageAdapter(
             binding.tvDate.text = message.date
         }
     }
+
+    // endregion
 }
+
+// region View Extensions
+
+/** Animate bubble to pressed state */
+private fun View.animatePress() {
+    animate()
+        .scaleX(Constants.BubbleAnimation.PRESSED_SCALE)
+        .scaleY(Constants.BubbleAnimation.PRESSED_SCALE)
+        .setDuration(Constants.BubbleAnimation.PRESS_DURATION_MS)
+        .start()
+}
+
+/** Animate bubble back to normal state with spring effect */
+private fun View.animateRelease() {
+    animate()
+        .scaleX(Constants.BubbleAnimation.NORMAL_SCALE)
+        .scaleY(Constants.BubbleAnimation.NORMAL_SCALE)
+        .setDuration(Constants.BubbleAnimation.RELEASE_DURATION_MS)
+        .setInterpolator(OvershootInterpolator(Constants.Animation.OVERSHOOT_TENSION))
+        .start()
+}
+
+// endregion
