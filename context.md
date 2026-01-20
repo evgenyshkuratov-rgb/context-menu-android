@@ -34,11 +34,11 @@ Tap on any message row (bubble or surrounding area) to show the context menu bot
 ### Animation System
 The context menu features a polished animation sequence:
 
-1. **Haptic Feedback**: Light tick vibration (20ms) on tap
+1. **Haptic Feedback**: Very light tick vibration (10ms, amplitude 30) on tap
 2. **Bubble Animation**: Spring bounce effect (shrinks to 88% → springs back with overshoot)
 3. **Menu Appearance**: Staggered item animations
-   - Reactions pop in one by one (40ms delay between each, overshoot interpolator)
-   - Action items slide in from left (30ms delay between each)
+   - Reactions pop in one by one (150ms duration, 30ms delay between each, overshoot interpolator)
+   - Action items slide in from left (150ms duration, 20ms delay between each)
 
 **Dependencies**: `androidx.dynamicanimation:dynamicanimation:1.0.0` for SpringAnimation
 
@@ -49,7 +49,7 @@ The context menu features a polished animation sequence:
   - Rounded container (25dp radius) with `background_sheet_or_modal` color
   - Full width with 8dp horizontal margins
   - 👍 👎 🔥 👌 🤔 + add button (evenly spaced with `layout_weight`)
-  - Add button has circular `background_second` background
+  - Add button (38dp) has circular `background_second` background
   - 12dp horizontal padding, 6dp vertical padding, 8dp gap below panel
   - Ripple effect on press (no visible default backgrounds on emojis)
 - **Drag handle**: 36x4dp rounded indicator
@@ -82,22 +82,19 @@ The context menu features a polished animation sequence:
 ```kotlin
 // In MessageAdapter - click listener on root for larger tap area
 binding.root.setOnClickListener {
-    onMessageClickListener?.onMessageClick(message, message.text, isOutgoing, binding.bubbleContainer)
+    clickListener?.onMessageClick(message, message.text, true, binding.bubbleContainer)
 }
 
 // In MainActivity - animate bubble then show menu
 override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
     animateBubble(anchorView) {
-        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
-        bottomSheet.show(supportFragmentManager, "ContextMenuBottomSheet")
+        ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
+            .show(supportFragmentManager, "ContextMenuBottomSheet")
     }
 }
 
 private fun animateBubble(view: View, onComplete: () -> Unit) {
-    // Haptic feedback
-    vibrator?.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
-
-    // Spring bounce animation
+    vibrator?.vibrate(VibrationEffect.createOneShot(10, 30))
     view.animate().scaleX(0.88f).scaleY(0.88f).setDuration(100).withEndAction {
         SpringAnimation(view, SpringAnimation.SCALE_X, 1f).apply {
             spring.stiffness = SpringForce.STIFFNESS_LOW
@@ -109,7 +106,7 @@ private fun animateBubble(view: View, onComplete: () -> Unit) {
             spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
             start()
         }
-        view.postDelayed({ onComplete() }, 150)
+        view.postDelayed(onComplete, 150)
     }.start()
 }
 ```
@@ -177,7 +174,8 @@ Colors auto-adapt via `values/` and `values-night/` qualifiers.
 | Bubble padding | 12dp H / 8dp V |
 | Icon size / alpha | 24dp / 55% |
 | Context menu action height | 48dp |
-| Reaction button | 44dp |
+| Reaction emoji button | 44dp |
+| Add reaction button | 38dp |
 
 ## Message Types
 ```kotlin
@@ -189,6 +187,20 @@ sealed class Message {
     data class DateSeparator(date: String)
 }
 ```
+
+## Code Architecture
+
+### Performance Optimizations
+- RecyclerView: `setHasFixedSize(true)` + `itemAnimator = null` for smoother scrolling
+- Single shared `CircleOutlineProvider` instance (not recreated per ViewHolder)
+- Lazy initialization of `Vibrator` service
+- Cached density/color values in ViewHolders
+
+### Code Organization
+- **MessageAdapter**: Common `setupSender()` and `setupAvatar()` helpers reduce duplication
+- **ContextMenuBottomSheet**: `dismissWithToast()` helper, extracted clipboard logic
+- **MainActivity**: Sample data extracted to `SampleData` object
+- **ViewType/Avatar**: Constants grouped in nested objects
 
 ## Implemented Features
 - [x] Chat screen UI (header, messages, input panel)

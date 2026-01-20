@@ -77,11 +77,11 @@
 
             <ImageView
                 android:id="@+id/btnAddReaction"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:layout_gravity="center"
                 android:background="@drawable/bg_add_reaction_button"
-                android:padding="10dp"
+                android:padding="7dp"
                 android:src="@drawable/ic_plus"
                 app:tint="@color/text_primary_55" />
 

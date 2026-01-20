@@ -3,9 +3,7 @@ package com.example.chatscreen
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.view.HapticFeedbackConstants
 import android.view.View
-import android.view.animation.OvershootInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.getSystemService
@@ -21,13 +19,12 @@ class MainActivity : AppCompatActivity(), OnMessageClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private var isDarkMode = false
+    private val vibrator by lazy { getSystemService<Vibrator>() }
+    private val circleOutlineProvider = CircleOutlineProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Enable edge-to-edge display
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -40,92 +37,59 @@ class MainActivity : AppCompatActivity(), OnMessageClickListener {
     private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            // Apply top padding to header
             binding.header.setPadding(
                 binding.header.paddingLeft,
                 systemBars.top + 8,
                 binding.header.paddingRight,
                 binding.header.paddingBottom
             )
-
-            // Set bottom spacer height to match safe area inset
             binding.bottomSpacer.layoutParams = binding.bottomSpacer.layoutParams.apply {
                 height = systemBars.bottom
             }
-
             insets
         }
     }
 
     private fun setupHeader() {
-        // Set header avatar to be circular
         binding.ivHeaderAvatar.clipToOutline = true
-        binding.ivHeaderAvatar.outlineProvider = CircleOutlineProvider()
-
-        // Back button click
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
-
-        // Theme toggle click
-        binding.btnThemeToggle.setOnClickListener {
-            toggleTheme()
-        }
+        binding.ivHeaderAvatar.outlineProvider = circleOutlineProvider
+        binding.btnBack.setOnClickListener { finish() }
+        binding.btnThemeToggle.setOnClickListener { toggleTheme() }
     }
 
     private fun toggleTheme() {
         isDarkMode = !isDarkMode
-        val mode = if (isDarkMode) {
-            AppCompatDelegate.MODE_NIGHT_YES
-        } else {
-            AppCompatDelegate.MODE_NIGHT_NO
-        }
-        AppCompatDelegate.setDefaultNightMode(mode)
+        AppCompatDelegate.setDefaultNightMode(
+            if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        )
         updateThemeIcon()
     }
 
     private fun updateThemeIcon() {
-        // Show sun icon in dark mode (tap to go light), moon in light mode (tap to go dark)
-        val iconRes = if (isDarkMode) {
-            R.drawable.ic_theme_light
-        } else {
-            R.drawable.ic_theme_dark
-        }
-        binding.btnThemeToggle.setImageResource(iconRes)
+        binding.btnThemeToggle.setImageResource(
+            if (isDarkMode) R.drawable.ic_theme_light else R.drawable.ic_theme_dark
+        )
     }
 
     private fun setupMessages() {
-        val messages = createSampleMessages()
-        val adapter = MessageAdapter(messages, this)
-
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            this.adapter = adapter
+            adapter = MessageAdapter(SampleData.messages, this@MainActivity)
+            setHasFixedSize(true)
+            itemAnimator = null
         }
     }
 
     override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
-        // Unified animation for all messages:
-        // - Bubble: iMessage spring bounce
-        // - Haptic: Telegram light tick
-        // - Menu: WhatsApp staggered items
         animateBubble(anchorView) {
-            showContextMenu(messageText, isOutgoing)
+            ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
+                .show(supportFragmentManager, "ContextMenuBottomSheet")
         }
     }
 
-    private fun showContextMenu(messageText: String?, isOutgoing: Boolean) {
-        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
-        bottomSheet.show(supportFragmentManager, "ContextMenuBottomSheet")
-    }
-
     private fun animateBubble(view: View, onComplete: () -> Unit) {
-        // Haptic: Telegram style light tick
-        val vibrator = getSystemService<Vibrator>()
-        vibrator?.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+        vibrator?.vibrate(VibrationEffect.createOneShot(10, 30))
 
-        // Bubble: iMessage style spring bounce
         view.animate()
             .scaleX(0.88f)
             .scaleY(0.88f)
@@ -141,63 +105,50 @@ class MainActivity : AppCompatActivity(), OnMessageClickListener {
                     spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
                     start()
                 }
-                // Delay menu slightly so bounce is visible
-                view.postDelayed({ onComplete() }, 150)
+                view.postDelayed(onComplete, 150)
             }
             .start()
     }
+}
 
-    private fun createSampleMessages(): List<Message> {
-        // Waveform heights pattern (simulating voice message visualization)
-        val waveformHeights = listOf(
-            4, 4, 4, 4, 4, 4, 6, 12, 17, 12, 6, 4, 4, 4, 4, 6, 8, 6, 4, 4,
-            4, 10, 18, 12, 16, 20, 20, 20, 16, 12, 12, 12, 14, 18, 12, 6, 4
+private object SampleData {
+    private val waveformHeights = listOf(
+        4, 4, 4, 4, 4, 4, 6, 12, 17, 12, 6, 4, 4, 4, 4, 6, 8, 6, 4, 4,
+        4, 10, 18, 12, 16, 20, 20, 20, 16, 12, 12, 12, 14, 18, 12, 6, 4
+    )
+
+    val messages = listOf(
+        Message.OutgoingText(
+            text = "Добрый день! Работа почти завершена. Осталось внести последние правки",
+            time = "10:15",
+            isRead = true
+        ),
+        Message.Voice(
+            senderName = "Тимур Петрович",
+            senderAvatarIndex = 0,
+            duration = "00:07",
+            time = "10:37",
+            waveformHeights = waveformHeights
+        ),
+        Message.IncomingText(
+            senderName = "Анна Ковалёва",
+            senderAvatarIndex = 1,
+            text = "Доброе утро! Напоминаю, что завтра крайний срок по экрану онбординга.\nИгорь, у тебя готов финальный макет? Светлана просила прислать ей сегодня до 14:00.",
+            time = "13:26"
+        ),
+        Message.DateSeparator(date = "Сегодня"),
+        Message.OutgoingText(
+            text = "Здравствуйте! Да, почти закончил. Осталось поправить шрифты и иконку. Вышлю до 12:00.",
+            time = "10:15",
+            isEdited = true,
+            isRead = true
+        ),
+        Message.Image(
+            senderName = "Анна Ковалёва",
+            senderAvatarIndex = 1,
+            imageResId = R.drawable.photo_sample,
+            time = "11:23",
+            reactions = listOf(Reaction("👌", 2))
         )
-
-        return listOf(
-            // Message 1: Outgoing text
-            Message.OutgoingText(
-                text = "Добрый день! Работа почти завершена. Осталось внести последние правки",
-                time = "10:15",
-                isRead = true
-            ),
-
-            // Message 2: Incoming voice message
-            Message.Voice(
-                senderName = "Тимур Петрович",
-                senderAvatarIndex = 0,
-                duration = "00:07",
-                time = "10:37",
-                waveformHeights = waveformHeights
-            ),
-
-            // Message 3: Incoming text
-            Message.IncomingText(
-                senderName = "Анна Ковалёва",
-                senderAvatarIndex = 1,
-                text = "Доброе утро! Напоминаю, что завтра крайний срок по экрану онбординга.\nИгорь, у тебя готов финальный макет? Светлана просила прислать ей сегодня до 14:00.",
-                time = "13:26"
-            ),
-
-            // Date separator
-            Message.DateSeparator(date = "Сегодня"),
-
-            // Message 4: Outgoing text (edited)
-            Message.OutgoingText(
-                text = "Здравствуйте! Да, почти закончил. Осталось поправить шрифты и иконку. Вышлю до 12:00.",
-                time = "10:15",
-                isEdited = true,
-                isRead = true
-            ),
-
-            // Message 5: Incoming image with reactions
-            Message.Image(
-                senderName = "Анна Ковалёва",
-                senderAvatarIndex = 1,
-                imageResId = R.drawable.photo_sample,
-                time = "11:23",
-                reactions = listOf(Reaction("👌", 2))
-            )
-        )
-    }
+    )
 }
