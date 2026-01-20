@@ -29,7 +29,20 @@ ContextMenuAndroid/
 
 ## Context Menu (Bottom Sheet)
 
-Tap on any message to show the context menu bottom sheet.
+Tap on any message row (bubble or surrounding area) to show the context menu bottom sheet.
+
+### Animation System
+The context menu features a polished animation sequence:
+
+1. **Haptic Feedback**: Light tick vibration (20ms) on tap
+2. **Bubble Animation**: Spring bounce effect (shrinks to 88% → springs back with overshoot)
+3. **Menu Appearance**: Staggered item animations
+   - Reactions pop in one by one (40ms delay between each, overshoot interpolator)
+   - Action items slide in from left (30ms delay between each)
+
+**Dependencies**: `androidx.dynamicanimation:dynamicanimation:1.0.0` for SpringAnimation
+
+**Permissions**: `android.permission.VIBRATE` for haptic feedback
 
 ### Components
 - **Reaction bar**: Separate floating panel above bottom sheet (transparent dialog background)
@@ -67,15 +80,37 @@ Tap on any message to show the context menu bottom sheet.
 
 ### Usage
 ```kotlin
-// In MessageAdapter - click listener on bubbleContainer
-binding.bubbleContainer.setOnClickListener {
-    onMessageClickListener?.onMessageClick(message, message.text, isOutgoing)
+// In MessageAdapter - click listener on root for larger tap area
+binding.root.setOnClickListener {
+    onMessageClickListener?.onMessageClick(message, message.text, isOutgoing, binding.bubbleContainer)
 }
 
-// In MainActivity
-override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean) {
-    ContextMenuBottomSheet.newInstance(messageText, isOutgoing)
-        .show(supportFragmentManager, "ContextMenuBottomSheet")
+// In MainActivity - animate bubble then show menu
+override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
+    animateBubble(anchorView) {
+        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
+        bottomSheet.show(supportFragmentManager, "ContextMenuBottomSheet")
+    }
+}
+
+private fun animateBubble(view: View, onComplete: () -> Unit) {
+    // Haptic feedback
+    vibrator?.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+
+    // Spring bounce animation
+    view.animate().scaleX(0.88f).scaleY(0.88f).setDuration(100).withEndAction {
+        SpringAnimation(view, SpringAnimation.SCALE_X, 1f).apply {
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+            start()
+        }
+        SpringAnimation(view, SpringAnimation.SCALE_Y, 1f).apply {
+            spring.stiffness = SpringForce.STIFFNESS_LOW
+            spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+            start()
+        }
+        view.postDelayed({ onComplete() }, 150)
+    }.start()
 }
 ```
 
@@ -164,13 +199,17 @@ sealed class Message {
 - [x] Vector icons from iOS (24x24 normalized)
 - [x] Edge-to-edge display with safe area handling
 - [x] Circular avatars, waveform visualization, reactions
-- [x] **Context menu bottom sheet** (tap on any message)
+- [x] **Context menu bottom sheet** (tap on any message row)
 - [x] Transparent dialog background (reaction bar and sheet are separate visual elements)
 - [x] Reaction bar: full-width, evenly spaced emojis, circular add button with background
 - [x] Bottom sheet extends to screen bottom with internal padding
 - [x] 10 action items with icons and press states
 - [x] Copy action copies text to clipboard
 - [x] Simplified input toolbar (removed chevron button)
+- [x] **Expanded tap area** (entire message row, not just bubble)
+- [x] **Haptic feedback** (light tick vibration on tap)
+- [x] **Spring bounce bubble animation** (shrink → spring back)
+- [x] **Staggered menu animations** (reactions pop in, actions slide in)
 
 ## Build & Run
 ```bash

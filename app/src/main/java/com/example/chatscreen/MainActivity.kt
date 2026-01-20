@@ -1,12 +1,19 @@
 package com.example.chatscreen
 
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.view.HapticFeedbackConstants
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatscreen.databinding.ActivityMainBinding
 
@@ -98,9 +105,46 @@ class MainActivity : AppCompatActivity(), OnMessageClickListener {
         }
     }
 
-    override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean) {
-        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing)
+    override fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View) {
+        // Unified animation for all messages:
+        // - Bubble: iMessage spring bounce
+        // - Haptic: Telegram light tick
+        // - Menu: WhatsApp staggered items
+        animateBubble(anchorView) {
+            showContextMenu(messageText, isOutgoing)
+        }
+    }
+
+    private fun showContextMenu(messageText: String?, isOutgoing: Boolean) {
+        val bottomSheet = ContextMenuBottomSheet.newInstance(messageText, isOutgoing, MenuAnimationStyle.WHATSAPP)
         bottomSheet.show(supportFragmentManager, "ContextMenuBottomSheet")
+    }
+
+    private fun animateBubble(view: View, onComplete: () -> Unit) {
+        // Haptic: Telegram style light tick
+        val vibrator = getSystemService<Vibrator>()
+        vibrator?.vibrate(VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE))
+
+        // Bubble: iMessage style spring bounce
+        view.animate()
+            .scaleX(0.88f)
+            .scaleY(0.88f)
+            .setDuration(100)
+            .withEndAction {
+                SpringAnimation(view, SpringAnimation.SCALE_X, 1f).apply {
+                    spring.stiffness = SpringForce.STIFFNESS_LOW
+                    spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+                    start()
+                }
+                SpringAnimation(view, SpringAnimation.SCALE_Y, 1f).apply {
+                    spring.stiffness = SpringForce.STIFFNESS_LOW
+                    spring.dampingRatio = SpringForce.DAMPING_RATIO_LOW_BOUNCY
+                    start()
+                }
+                // Delay menu slightly so bounce is visible
+                view.postDelayed({ onComplete() }, 150)
+            }
+            .start()
     }
 
     private fun createSampleMessages(): List<Message> {

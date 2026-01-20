@@ -16,7 +16,7 @@ import com.example.chatscreen.databinding.ItemMessageVoiceBinding
  * Callback interface for message click events.
  */
 interface OnMessageClickListener {
-    fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean)
+    fun onMessageClick(message: Message, messageText: String?, isOutgoing: Boolean, anchorView: View)
 }
 
 /**
@@ -107,9 +107,9 @@ class MessageAdapter(
             binding.ivEdit.visibility = if (message.isEdited) View.VISIBLE else View.GONE
             binding.ivCheckmark.visibility = if (message.isRead) View.VISIBLE else View.GONE
 
-            // Click listener for context menu
-            binding.bubbleContainer.setOnClickListener {
-                onMessageClickListener?.onMessageClick(message, message.text, true)
+            // Click listener for context menu - use root for larger tap area
+            binding.root.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, message.text, true, binding.bubbleContainer)
             }
         }
     }
@@ -139,9 +139,9 @@ class MessageAdapter(
             binding.ivAvatar.clipToOutline = true
             binding.ivAvatar.outlineProvider = CircleOutlineProvider()
 
-            // Click listener for context menu
-            binding.bubbleContainer.setOnClickListener {
-                onMessageClickListener?.onMessageClick(message, message.text, false)
+            // Click listener for context menu - use root for larger tap area
+            binding.root.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, message.text, false, binding.bubbleContainer)
             }
         }
     }
@@ -174,9 +174,9 @@ class MessageAdapter(
             // Create waveform bars
             setupWaveform(message.waveformHeights)
 
-            // Click listener for context menu
-            binding.bubbleContainer.setOnClickListener {
-                onMessageClickListener?.onMessageClick(message, null, false)
+            // Click listener for context menu - use root for larger tap area
+            binding.root.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, null, false, binding.bubbleContainer)
             }
         }
 
@@ -240,9 +240,9 @@ class MessageAdapter(
                 binding.tvReactionCount.text = firstReaction.count.toString()
             }
 
-            // Click listener for context menu
-            binding.bubbleContainer.setOnClickListener {
-                onMessageClickListener?.onMessageClick(message, null, false)
+            // Click listener for context menu - use root for larger tap area
+            binding.root.setOnClickListener {
+                onMessageClickListener?.onMessageClick(message, null, false, binding.bubbleContainer)
             }
         }
     }
